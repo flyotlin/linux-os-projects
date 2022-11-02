@@ -20,27 +20,30 @@ struct thread_segment_info {
     unsigned long start_stack;
 };
 
-void* child(void*);
+void* child1(void*);
+void* child2(void*);
 void show_info(struct thread_segment_info *);
 
 
 int main()
 {
     // Try to initialize data and heap segment
-    struct thread_segment_info *info = (struct thread_segment_info) malloc(sizeof(struct thread_segment_info));
+    struct thread_segment_info *info = (struct thread_segment_info *) malloc(sizeof(struct thread_segment_info));
     int x = 3;
     int *y = (int *) malloc(sizeof(int));
     *y = 4;
 
-    long int ret = syscall(323, getpid(), info);
+    printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
+    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    show_info(info);
 
     // Create thread 1
     pthread_t thread_1;
-    pthread_create(&thread_1, NULL, child, "Child");
+    pthread_create(&thread_1, NULL, child1, "Child");
 
     // Create thread 2
     pthread_t thread_2;
-    pthread_create(&thread_2, NULL, child, "Child");
+    pthread_create(&thread_2, NULL, child2, "Child");
 
     // Wait 2 threads finish
     pthread_join(thread_1, NULL);
@@ -49,19 +52,34 @@ int main()
     return 0;
 }
 
-void* child(void* data)
+void* child1(void* data)
 {
     // Try to initialize data and heap segment
-    struct thread_segment_info *info = (struct thread_segment_info) malloc(sizeof(struct thread_segment_info));
-    int x = 3;
+    struct thread_segment_info *info = (struct thread_segment_info *) malloc(sizeof(struct thread_segment_info));
+    int x = 31;
+    float z = 0.23;
     int *y = (int *) malloc(sizeof(int));
-    *y = 4;
+    *y = 40;
 
-    // Call syscall to get segment information
-    long int ret = syscall(323, getpid(), info);
+    printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
+    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    show_info(info);
 
-    printf("Thread returend %ld\n", ret);
-    printf("Thread: %lx, %x\n", pthread_self(), getpid());
+    pthread_exit(0);
+}
+
+void* child2(void* data)
+{
+    // Try to initialize data and heap segment
+    struct thread_segment_info *info = (struct thread_segment_info *) malloc(sizeof(struct thread_segment_info));
+    long x = 33;
+    int z = 5;
+    long *y = (int *) malloc(sizeof(int));
+    *y = 44;
+
+    printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
+    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    show_info(info);
 
     pthread_exit(0);
 }
