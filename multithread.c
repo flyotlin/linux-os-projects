@@ -34,7 +34,7 @@ int main()
     *y = 4;
 
     printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
-    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    long int ret = syscall(323, 0, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
     show_info(info);
 
     // Create thread 1
@@ -62,7 +62,7 @@ void* child1(void* data)
     *y = 40;
 
     printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
-    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    long int ret = syscall(323, 0, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
     show_info(info);
 
     pthread_exit(0);
@@ -78,7 +78,7 @@ void* child2(void* data)
     *y = 44;
 
     printf("%ld, %ld, %ld\n", getpid(), syscall(SYS_gettid), pthread_self());
-    long int ret = syscall(323, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
+    long int ret = syscall(323, 0, getpid(), syscall(SYS_gettid), info);        // Call syscall to get segment information
     show_info(info);
 
     pthread_exit(0);
