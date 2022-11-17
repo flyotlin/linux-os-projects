@@ -1,0 +1,8 @@
+.vscode/
+src/
+bzImage
+init
+initrd.img
+old/
+initrd/*
+!initrd/src
