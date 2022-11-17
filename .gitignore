@@ -6,3 +6,5 @@ initrd.img
 old/
 initrd/*
 !initrd/src
+*.o
+*.tmp
