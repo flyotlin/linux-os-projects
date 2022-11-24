@@ -1,5 +1,6 @@
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
+#include <linux/slab.h>
 #include <linux/uaccess.h>
 #include <linux/mm.h>
 
