@@ -14,7 +14,7 @@ cd initrd
     echo 'mount -t sysfs sysfs /sys' >> init
     echo 'mount -t proc proc /proc' >> init
     echo 'mount -t devtmpfs udev /dev' >> init
-    echo 'mount -t ext2 --bind -o loop /src /src' >> init
+    echo 'mount -t ext2 --bind -o loop /document /document' >> init
     echo 'sysctl -w kernel.printk="2 4 1 7"' >> init
 
     echo '/bin/sh' >> init

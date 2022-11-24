@@ -11,10 +11,12 @@
 
 void* child1(void*);
 void* child2(void*);
+int global_data = 10;
 
 int main()
 {
-    long int ret = syscall(SYSCALL_HELLO, getpid());
+    int local_var = 3;
+    long int ret = syscall(SYSCALL_HELLO, &local_var);
     printf("System call sys_hello returend %ld\n", ret);
 
     // Create thread 1
@@ -34,7 +36,8 @@ int main()
 
 void* child1(void* data)
 {
-    long int ret = syscall(SYSCALL_HELLO, getpid());
+    int local_var = 4;
+    long int ret = syscall(SYSCALL_HELLO, &local_var);
     printf("System call sys_hello returend %ld\n", ret);
 
     pthread_exit(0);
@@ -42,7 +45,8 @@ void* child1(void* data)
 
 void* child2(void* data)
 {
-    long int ret = syscall(SYSCALL_HELLO, getpid());
+    int local_var = 5;
+    long int ret = syscall(SYSCALL_HELLO, &local_var);
     printf("System call sys_hello returend %ld\n", ret);
 
     pthread_exit(0);
