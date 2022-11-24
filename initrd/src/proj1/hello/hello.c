@@ -20,7 +20,7 @@ struct seg_info {
     unsigned long start_stack;
 };
 
-SYSCALL_DEFINE0(hello, struct seg_info __user *, info)
+SYSCALL_DEFINE1(hello, struct seg_info __user *, info)
 {
     int size = sizeof(struct seg_info);
     struct seg_info* info_buf = (struct seg_info*) kmalloc(size, GFP_KERNEL);
