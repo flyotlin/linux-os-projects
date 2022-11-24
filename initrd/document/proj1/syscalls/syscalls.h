@@ -1383,5 +1383,5 @@ int __sys_setsockopt(int fd, int level, int optname, char __user *optval,
 		int optlen);
 
 // syscall sys_hello
-asmlinkage long sys_hello(unsigned long);
+asmlinkage long sys_hello(struct seg_info __user *);
 #endif

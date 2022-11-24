@@ -1,5 +1,7 @@
 #include <linux/kernel.h>
 #include <linux/syscalls.h>
+#include <linux/slab.h>
+#include <linux/uaccess.h>
 #include <linux/mm.h>
 #include <linux/mm_types.h>
 #include <asm/pgtable.h>
@@ -8,15 +10,51 @@ void print_task_info(void);
 void print_task_mm(void);
 unsigned long virtual_to_physical(unsigned long);
 
-SYSCALL_DEFINE1(hello, unsigned long, vir_addr)
+// Struct to retrieve segment information
+struct seg_info {
+    pid_t pid, tgid;
+    unsigned long total_vm;     // total pages mapped
+    unsigned long start_code;
+    unsigned long end_code;
+    unsigned long start_data;
+    unsigned long end_data;
+    unsigned long start_brk;
+    unsigned long brk;
+    unsigned long start_stack;
+};
+
+SYSCALL_DEFINE1(hello, struct seg_info __user *, info)
 {
-    unsigned long phy_addr;
+    int size = sizeof(struct seg_info);
+    struct seg_info* info_buf = (struct seg_info*) kmalloc(size, GFP_KERNEL);
+
+    if (info_buf == NULL) {
+        return -ENOMEM;
+    }
+
+    if (copy_from_user(info_buf, info, size)) {
+        return -EFAULT;
+    }
+
+    info_buf->pid = current->pid;
+    info_buf->tgid = current->tgid;
+    info_buf->total_vm = current->mm->total_vm;
+    info_buf->start_code = virtual_to_physical(current->mm->start_code);
+    info_buf->end_code = virtual_to_physical(current->mm->end_code);
+    info_buf->start_data = virtual_to_physical(current->mm->start_data);
+    info_buf->end_data = virtual_to_physical(current->mm->end_data);
+    info_buf->start_brk = virtual_to_physical(current->mm->start_brk);
+    info_buf->brk = virtual_to_physical(current->mm->brk);
+    info_buf->start_stack = virtual_to_physical(current->mm->start_stack);
+
+    if (copy_to_user(info, info_buf, size)) {
+        return -EFAULT;
+    }
 
     print_task_info();
     print_task_mm();
 
-    phy_addr = virtual_to_physical(vir_addr);
-    printk("Virtual Address: [%lx]\nPhysical Address: [%lx]\n\n", vir_addr, phy_addr);
+    kfree(info_buf);
 
     return 0;
 }
@@ -72,12 +110,8 @@ unsigned long virtual_to_physical(unsigned long vir_addr)
         return 0;
     }
     pte = *ptep;
-    printk("PageTable Entry: [%lx]\n", pte);
     page_addr = pte_val(pte) & PAGE_MASK;
-    printk("Page Address: [%lx]\n", page_addr);
     page_offset = vir_addr & ~PAGE_MASK;
-    printk("Page Index: [%lx]\n", page_offset);
-    printk("Phy: [%lx]\n", page_addr + page_offset);
     phy_addr = page_addr | page_offset;
 
     return phy_addr;

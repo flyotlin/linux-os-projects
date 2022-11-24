@@ -8,16 +8,28 @@
 
 #define SYSCALL_HELLO 449
 
+// Struct to retrieve segment information
+struct seg_info {
+    pid_t pid, tgid;
+    unsigned long total_vm;     // total pages mapped
+    unsigned long start_code;
+    unsigned long end_code;
+    unsigned long start_data;
+    unsigned long end_data;
+    unsigned long start_brk;
+    unsigned long brk;
+    unsigned long start_stack;
+};
 
 void* child1(void*);
 void* child2(void*);
-int global_data = 10;
+void show_info(struct seg_info *);
 
 int main()
 {
-    int local_var = 3;
-    long int ret = syscall(SYSCALL_HELLO, &local_var);
-    printf("System call sys_hello returend %ld\n", ret);
+    struct seg_info* info = (struct seg_info*) malloc(sizeof(struct seg_info));
+    long int ret = syscall(SYSCALL_HELLO, info);
+    show_info(info);
 
     // Create thread 1
     pthread_t thread_1;
@@ -36,18 +48,29 @@ int main()
 
 void* child1(void* data)
 {
-    int local_var = 4;
-    long int ret = syscall(SYSCALL_HELLO, &local_var);
-    printf("System call sys_hello returend %ld\n", ret);
+    struct seg_info* info = (struct seg_info*) malloc(sizeof(struct seg_info));
+    long int ret = syscall(SYSCALL_HELLO, info);
 
+    show_info(info);
     pthread_exit(0);
 }
 
 void* child2(void* data)
 {
-    int local_var = 5;
-    long int ret = syscall(SYSCALL_HELLO, &local_var);
-    printf("System call sys_hello returend %ld\n", ret);
+    struct seg_info* info = (struct seg_info*) malloc(sizeof(struct seg_info));
+    long int ret = syscall(SYSCALL_HELLO, info);
 
+    show_info(info);
     pthread_exit(0);
+}
+
+void show_info(struct seg_info *info)
+{
+    printf("Task [%ld, %ld]:\n", info->pid, info->tgid);
+    printf("total vm: %ld\n", info->total_vm);
+    printf("data segment: [%016lx ~ %016lx]\n", info->start_data, info->end_data);
+    printf("code segment: [%016lx ~ %016lx]\n", info->start_code, info->end_code);
+    printf("brk segment: [%016lx ~ %016lx]\n", info->start_brk, info->brk);
+    printf("stack segment: [%016lx ~]\n", info->start_stack);
+    printf("=========\n\n");
 }
