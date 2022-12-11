@@ -5,6 +5,9 @@ init
 initrd.img
 old/
 initrd/*
-!initrd/src
+!initrd/document
+initrd/document/syscall
+initrd/document/thread
 *.o
 *.tmp
+*.log
