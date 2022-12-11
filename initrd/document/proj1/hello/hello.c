@@ -6,6 +6,8 @@
 #include <linux/mm_types.h>
 #include <asm/pgtable.h>
 
+#define LIB_ADDR_BUF_SIZE 64
+
 void print_task_info(void);
 void print_task_mm(void);
 unsigned long virtual_to_physical(unsigned long);
@@ -21,6 +23,10 @@ struct seg_info {
     unsigned long start_brk;
     unsigned long brk;
     unsigned long start_stack;
+
+    char library_name[LIB_ADDR_BUF_SIZE][256];
+    unsigned long library_addrs[LIB_ADDR_BUF_SIZE][2];
+    int library_num;
 };
 
 SYSCALL_DEFINE1(hello, struct seg_info __user *, info)
@@ -46,6 +52,12 @@ SYSCALL_DEFINE1(hello, struct seg_info __user *, info)
     info_buf->start_brk = virtual_to_physical(current->mm->start_brk);
     info_buf->brk = virtual_to_physical(current->mm->brk);
     info_buf->start_stack = virtual_to_physical(current->mm->start_stack);
+
+    for (int i = 0; i < info_buf->library_num; i++) {
+        unsigned long *addr = info_buf->library_addrs[i];
+        info_buf->library_addrs[i][0] = virtual_to_physical(addr[0]);
+        info_buf->library_addrs[i][1] = virtual_to_physical(addr[1]);
+    }
 
     if (copy_to_user(info, info_buf, size)) {
         return -EFAULT;
